@@ -6,7 +6,7 @@ import { UserContextProvider } from './UserContext'
 
 function App() {
 
-  axios.defaults.baseURL = 'http://localhost:3000';  
+  axios.defaults.baseURL = 'https://resonant-lillian-vineetjana-d2332314.koyeb.app';  
 
   axios.defaults.withCredentials = true;
 
