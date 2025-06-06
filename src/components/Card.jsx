@@ -3,7 +3,7 @@ import axios from "axios";
 import { Canvas } from "@react-three/fiber";
 import Model from "./Model/Model";
 
-const backendBaseUrl = "http://localhost:3000";
+const backendBaseUrl = 'https://resonant-lillian-vineetjana-d2332314.koyeb.app';
 
 const Thumbnail = ({ modelUrl }) => (
     <Canvas
