@@ -2,20 +2,22 @@ import { OrbitControls } from "@react-three/drei";
 import { useThree } from "@react-three/fiber";
 import { Interactive, useHitTest, useXR } from "@react-three/xr";
 import { useRef, useState } from "react";
+import * as THREE from "three";
 import Model from "./Model";
 
 const XrModelHit = ({ modelUrl }) => {
     const reticleRef = useRef();
     const [models, setModels] = useState([]);
-
     const { isPresenting } = useXR();
 
+    // Adjust camera position in non-AR mode
     useThree(({ camera }) => {
         if (!isPresenting) {
             camera.position.z = 3;
         }
     });
 
+    // Plane detection and reticle pose update
     useHitTest((hitMatrix) => {
         if (reticleRef.current) {
             hitMatrix.decompose(
@@ -23,39 +25,54 @@ const XrModelHit = ({ modelUrl }) => {
                 reticleRef.current.quaternion,
                 reticleRef.current.scale
             );
-            reticleRef.current.rotation.set(-Math.PI / 2, 0, 0);
+            reticleRef.current.visible = true;
         }
     });
-      
 
-    const placeModel = (e) => {
-        if (!modelUrl) return; // Only place model if a URL is provided
-        let position = e.intersection.object.position.clone();
-        let id = Date.now();
-        setModels([{ position, id }]);
+    // On user tap, place model at reticle position
+    const placeModel = () => {
+        if (!modelUrl || !reticleRef.current.visible) return;
+
+        const pos = reticleRef.current.position.clone();
+        const quat = reticleRef.current.quaternion.clone();
+        const id = Date.now();
+
+        setModels(prev => [...prev, { position: pos, quaternion: quat, id }]);
     };
 
     return (
         <>
             <OrbitControls
-                enableRotate={true}
+                enableRotate={!isPresenting}
                 enableZoom={false}
                 maxPolarAngle={Math.PI / 2}
             />
-            <ambientLight />
-            {isPresenting &&
-                models.map(({ position, id }) => (
-                    <Model key={id} position={position} modelUrl={modelUrl} />
-                ))}
+            <ambientLight intensity={0.5} />
+
+            {/* Placed Models */}
+            {models.map(({ position, quaternion, id }) => (
+                <Model
+                    key={id}
+                    position={position}
+                    quaternion={quaternion}
+                    modelUrl={modelUrl}
+                />
+            ))}
+
+            {/* Reticle for placement preview */}
             {isPresenting && (
                 <Interactive onSelect={placeModel}>
-                    <mesh ref={reticleRef} rotation-x={-Math.PI / 2}>
-                        <ringGeometry args={[0.1, 0.25, 32]} />
-                        <meshStandardMaterial color={"white"} />
+                    <mesh ref={reticleRef} visible={false}>
+                        <ringGeometry args={[0.03, 0.06, 32]} />
+                        <meshStandardMaterial color="#ffffff" opacity={0.8} transparent />
                     </mesh>
                 </Interactive>
             )}
-            {!isPresenting && modelUrl && <Model position={[0, -0.5, 0]} modelUrl={modelUrl} />}
+
+            {/* Non-AR Fallback */}
+            {!isPresenting && modelUrl && (
+                <Model position={[0, -0.5, 0]} modelUrl={modelUrl} />
+            )}
         </>
     );
 };
