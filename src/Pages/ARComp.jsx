@@ -11,13 +11,15 @@ function AppPage() {
       <Navbar />
 
       {/* AR/3D Section */}
-      <div className="flex-grow">
-        <HitTest modelUrl={modelUrl} />
-      </div>
+      <div className="flex-grow flex flex-col">
+        <div className="flex-[2]">
+          <HitTest modelUrl={modelUrl} />
+        </div>
 
-      {/* Model Selector */}
-      <div className="mt-4 px-4 pb-6">
-        <Card onModelSelect={setModelUrl} />
+        {/* Model Selector */}
+        <div className="flex-[1] mt-4 px-4 pb-6">
+          <Card onModelSelect={setModelUrl} />
+        </div>
       </div>
     </div>
   );

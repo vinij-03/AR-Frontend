@@ -11,7 +11,7 @@ const HitTest = () => {
                     requiredFeatures: ["hit-test"],
                 }}
             />
-            <div className="w-screen h-screen">
+            <div className="w-screen h-[66.6667vh]">
                 <Canvas>
                     <XR>
                         <XrModelHit />
