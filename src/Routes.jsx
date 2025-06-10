@@ -7,23 +7,23 @@ import AppPage from './Pages/ARComp'
 
 function Routes() {
     const { username } = useContext(UserContext)
-    // if (username) {
-    //     return (
-    //         <>
-    //             <AppPage />
-    //         </>
-    //     )
-    // }
-    // return (
-    //     <>
-    //         <RegisterLogin />
-    //     </>
-    // )
-    return(
+    if (username) {
+        return (
+            <>
+                <AppPage />
+            </>
+        )
+    }
+    return (
         <>
-            <AppPage />
+            <RegisterLogin />
         </>
     )
+    // return(
+    //     <>
+    //         <AppPage />
+    //     </>
+    // )
 }
 
 
