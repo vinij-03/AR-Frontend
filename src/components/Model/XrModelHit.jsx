@@ -4,11 +4,15 @@ import { Interactive, useHitTest, useXR } from "@react-three/xr";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import Model from "./Model";
+import { useGesture } from "@use-gesture/react";
 
 const XrModelHit = ({ modelUrl }) => {
     const reticleRef = useRef();
+    const modelRef = useRef();
     const [modelData, setModelData] = useState(null);
     const { isPresenting } = useXR();
+    const [scale, setScale] = useState(1);
+    const [rotationY, setRotationY] = useState(0);
 
     // Non-AR camera position
     useThree(({ camera }) => {
@@ -38,6 +42,27 @@ const XrModelHit = ({ modelUrl }) => {
         setModelData({ position: pos, quaternion: quat, id: Date.now() });
     };
 
+    // Gesture handling for AR (rotation & zoom)
+    useGesture(
+        {
+            onDrag: ({ delta: [dx] }) => {
+                if (isPresenting && modelRef.current) {
+                    setRotationY((prev) => prev + dx * 0.01); // rotate horizontally
+                }
+            },
+            onPinch: ({ delta: [d], offset: [s] }) => {
+                if (isPresenting && modelRef.current) {
+                    setScale(Math.min(2, Math.max(0.2, s)));
+                }
+            },
+        },
+        {
+            target: modelRef,
+            eventOptions: { passive: false },
+            pinch: { scaleBounds: { min: 0.2, max: 2 } },
+        }
+    );
+
     return (
         <>
             {/* Lighting */}
@@ -47,18 +72,21 @@ const XrModelHit = ({ modelUrl }) => {
             {/* OrbitControls for non-AR preview */}
             <OrbitControls
                 enableRotate={!isPresenting}
-                enableZoom={false}
+                enableZoom={!isPresenting}
                 maxPolarAngle={Math.PI / 2}
             />
 
             {/* One Model Placement */}
             {modelData && isPresenting && (
-                <Model
-                    key={modelData.id}
+                <group
+                    ref={modelRef}
                     position={modelData.position}
                     quaternion={modelData.quaternion}
-                    modelUrl={modelUrl}
-                />
+                    rotation={[0, rotationY, 0]}
+                    scale={[scale, scale, scale]}
+                >
+                    <Model modelUrl={modelUrl} />
+                </group>
             )}
 
             {/* Reticle */}
